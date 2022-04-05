@@ -19,7 +19,16 @@ df <- read_csv("D:/Users/Matt/Downloads/A Thomson Data V2 (to submit for approva
     ))) %>% 
     mutate(across(c("specimen_collection_date", "admission_date", "discharge_date", "death_date"), ~as.Date(., format = "%m/%d/%Y"))) %>% 
     type_convert() %>% 
-    mutate(record_id = as.character(record_id))
+    mutate(record_id = as.character(record_id), 
+           age_bucket = case_when(
+               between(age_in_years, 0, 17) ~ "0 - 17", 
+               between(age_in_years, 18, 34) ~ "18 - 34", 
+               between(age_in_years, 35, 49) ~ "35 - 49", 
+               between(age_in_years, 50, 64) ~ "50 - 64", 
+               between(age_in_years, 65, 79) ~ "65 - 79", 
+               between(age_in_years, 80, 120) ~ "80+", 
+               T ~ "err"
+           ))
 ```
 
 ```{r}
@@ -41,5 +50,10 @@ skim %>%
 df %>% tabyl(facility_type, did_patient_die) %>% adorn_percentages() %>% adorn_ns() %>% as_tibble()
 df %>% tabyl(other_invasive_devices, did_patient_die) %>% adorn_percentages() %>% adorn_ns() %>% as_tibble()
 df %>% tabyl(history_of_mdro, did_patient_die) %>% adorn_percentages() %>% adorn_ns() %>% as_tibble()
+df %>% tabyl()
+```
+
+```{r}
+
 ```
 
