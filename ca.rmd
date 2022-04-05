@@ -1,0 +1,45 @@
+---
+title: "CA Stuff"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(skimr)
+```
+
+```{r}
+df <- read_csv("D:/Users/Matt/Downloads/A Thomson Data V2 (to submit for approval) Final.csv") %>% 
+    clean_names() %>% 
+    mutate(across(where(is.character), ~case_when(
+        . == "Checked" ~ "1", 
+        . == "Unchecked" ~ "0", 
+        T ~ .
+    ))) %>% 
+    mutate(across(c("specimen_collection_date", "admission_date", "discharge_date", "death_date"), ~as.Date(., format = "%m/%d/%Y"))) %>% 
+    type_convert() %>% 
+    mutate(record_id = as.character(record_id))
+```
+
+```{r}
+# metadata
+skim <- skim(df)
+```
+
+```{r}
+# frequency tables of categorical fields
+skim %>% 
+    filter(between(character.n_unique, 2, 10)) %>% 
+    pull(skim_variable) %>% 
+    map(~df %>% 
+            tabyl(.data[[.x]]))
+```
+
+```{r}
+# crosstabs of categorical fields with the death outcome
+df %>% tabyl(facility_type, did_patient_die) %>% adorn_percentages() %>% adorn_ns() %>% as_tibble()
+df %>% tabyl(other_invasive_devices, did_patient_die) %>% adorn_percentages() %>% adorn_ns() %>% as_tibble()
+df %>% tabyl(history_of_mdro, did_patient_die) %>% adorn_percentages() %>% adorn_ns() %>% as_tibble()
+```
+
